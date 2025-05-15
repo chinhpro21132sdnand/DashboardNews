@@ -6,6 +6,10 @@ const labelsBusiness = new mongoose.Schema({
     required: true,
   },
   time: {
+    type: String,
+    required: true,
+  },
+  viral: {
     type: Date,
     required: true,
   },

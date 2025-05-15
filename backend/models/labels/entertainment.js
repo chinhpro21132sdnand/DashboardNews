@@ -6,7 +6,7 @@ const labelsEntertaiment = new mongoose.Schema({
     required: true,
   },
   time: {
-    type: Date,
+    type: String,
     required: true,
   },
   content: {
@@ -15,6 +15,10 @@ const labelsEntertaiment = new mongoose.Schema({
   },
   like: {
     type: Number,
+    required: true,
+  },
+  viral: {
+    type: Date,
     required: true,
   },
   comment: {

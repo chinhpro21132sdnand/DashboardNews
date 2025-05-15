@@ -15,8 +15,9 @@ const AdminContent = ({
       <div
         style={{
           padding: 24,
-          minHeight: "calc(100vh - 180px)",
+          maxHeight: "730px",
           background: "#f1f3f8",
+          overflow: "scroll",
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between" }}>

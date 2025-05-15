@@ -2,6 +2,8 @@ const labelsBusiness = require("../../models/labels/bussiness");
 
 const labelsBusinessController = {
   getAllBusiness: async (req, res) => {
+    const date = new Date();
+    console.log(date);
     const getLabelsBusiness = await labelsBusiness.find();
     res.status(200).json({
       success: true,

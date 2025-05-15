@@ -21,6 +21,10 @@ const labelsTech = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  viral: {
+    type: Date,
+    required: true,
+  },
   labels: {
     type: String,
   },

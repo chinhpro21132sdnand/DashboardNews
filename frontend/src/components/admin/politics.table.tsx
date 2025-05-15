@@ -6,11 +6,10 @@ import PopUpModal from "../common/popup/page";
 
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { getAllvegetale, detailVegetable } from "@/reduce/vegatable/apiRequest";
+import { getAllPolitics, detailPolitics } from "@/reduce/politics/apiRequest";
 import IsActiveStart from "@/types/dataStart";
 import Meta from "antd/es/card/Meta";
 import { formatdate } from "@/library/format";
-// import toastMessage from "@/components/common/toastMessage/page";
 
 const UserTable = () => {
   const [dataSource, setDataSource] = useState([]);
@@ -22,18 +21,7 @@ const UserTable = () => {
   const [isActive, setIsActive] = useState("");
   const [dataDetail, setDataDetail] = useState([]);
   const dispatch = useDispatch();
-  // const handleClickFN = (keys: string, record) => {
-  //   if (keys === "delete") {
-  //     setNameVege(record.name);
-  //     setIsDeletedVege(true);
-  //   } else {
-  //     setIsUpdateVege(true);
-  //   }
-  // };
-  // const handelOpenChange = (id: string, visible: boolean) => {
-  //   setIdDropdow(id);
-  //   setOpenDropdownId(visible ? id : null);
-  // };
+
   const fetchData = async () => {
     try {
       const params = [
@@ -43,7 +31,7 @@ const UserTable = () => {
         currentPage && `current=${currentPage}`,
       ].filter(Boolean);
       const url = params.length > 0 ? `?${params.join("&")}` : "";
-      const res = await getAllvegetale(dispatch, url);
+      const res = await getAllPolitics(dispatch, url);
       getPagesize(res?.data.pagination?.pageSize);
       getTotal(res?.data.pagination?.totalItems);
       setDataSource(res?.data.data);
@@ -68,7 +56,7 @@ const UserTable = () => {
   };
   const handelID = async (item: string): Promise<void> => {
     try {
-      const resDetail = await detailVegetable(dispatch, item);
+      const resDetail = await detailPolitics(dispatch, item);
       setDataDetail(resDetail?.data.data);
       setIsModalOpen(true);
     } catch (err) {
@@ -94,7 +82,7 @@ const UserTable = () => {
             marginBottom: 20,
           }}
         >
-          <h3>Quản lý bài viết về công nghệ</h3>
+          <h3>Quản lý bài viết về hình sự</h3>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <Input
               size="large"
@@ -146,7 +134,7 @@ const UserTable = () => {
           dataDetail={dataDetail}
           isModalOpen={isModalOpen}
           onClose={onClose}
-          title="Chi tiết bài viết về công nghệ"
+          title="Chi tiết bài viết giải trí"
         />
 
         <PaginationComponent

@@ -15,7 +15,7 @@ const AdminSideBar = () => {
   const items: MenuItem[] = [
     {
       key: "grp",
-      label: "BASE VIEW CMS NEXTJS",
+      label: "CMS DASHBOARD LABELS",
       type: "group",
       children: [
         {
@@ -31,15 +31,13 @@ const AdminSideBar = () => {
             {
               key: "Quản lý các bài viết về công nghệ",
               label: (
-                <Link href={"/dashboard/vegatable"}>
-                  Quản lý bài viết công nghệ
-                </Link>
+                <Link href={"/dashboard/tech"}>Quản lý bài viết công nghệ</Link>
               ),
             },
             {
               key: "Quản lý các bài viết về giải trí",
               label: (
-                <Link href={"/dashboard/vegatable"}>
+                <Link href={"/dashboard/entertaiment"}>
                   Quản lý bài viết giải trí
                 </Link>
               ),
@@ -47,7 +45,7 @@ const AdminSideBar = () => {
             {
               key: "Quản lý các bài viết về hình sự",
               label: (
-                <Link href={"/dashboard/vegatable"}>
+                <Link href={"/dashboard/politics"}>
                   Quản lý bài viết hình sự
                 </Link>
               ),
@@ -55,7 +53,7 @@ const AdminSideBar = () => {
             {
               key: "Quản lý các bài viết kinh doanh",
               label: (
-                <Link href={"/dashboard/vegatable"}>
+                <Link href={"/dashboard/business"}>
                   Quản lý bài viết kinh doanh
                 </Link>
               ),

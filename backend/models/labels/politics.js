@@ -6,7 +6,7 @@ const labelsPolitics = new mongoose.Schema({
     required: true,
   },
   time: {
-    type: Date,
+    type: String,
     required: true,
   },
   content: {
@@ -19,6 +19,10 @@ const labelsPolitics = new mongoose.Schema({
   },
   comment: {
     type: Number,
+    required: true,
+  },
+  viral: {
+    type: Date,
     required: true,
   },
   labels: {

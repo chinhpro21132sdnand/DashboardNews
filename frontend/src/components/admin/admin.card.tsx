@@ -1,73 +1,92 @@
 "use client";
-import React from "react";
-import { Line } from "@ant-design/charts";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+//import { Line } from "@ant-design/charts";
 import { Card, Col, Row } from "antd";
 import { Pie } from "@ant-design/plots";
-
+import { getAllDashboard } from "@/reduce/dashboard/apiRequest";
+import { useDispatch } from "react-redux";
+import { Select } from "antd";
+import { getUtcDateRange } from "../../library/dateJs";
 const AdminCard: React.FC = () => {
-  // Dữ liệu biểu đồ đường
-  const data = [
-    { year: "1991", value: 3 },
-    { year: "1992", value: 4 },
-    { year: "1993", value: 3.5 },
-    { year: "1994", value: 5 },
-    { year: "1995", value: 4.9 },
-    { year: "1996", value: 6 },
-    { year: "1997", value: 7 },
-    { year: "1998", value: 9 },
-    { year: "1999", value: 13 },
-  ];
+  const dispatch = useDispatch();
+  const dateTo = new Date(2025, 4, 14);
+  const dateFrom = new Date(dateTo.getFullYear(), dateTo.getMonth(), 2);
+  const [dataPie, setDataPie] = useState([]);
+  const [dateRange, setDateRange] = useState<{
+    start: Date | null;
+    end: Date | null;
+  }>({
+    start: null,
+    end: null,
+  });
+  const fetchData = useCallback(async () => {
+    console.log(dateRange, "dateRange");
+    try {
+      const res = await getAllDashboard(dispatch, dateRange);
+      setDataPie(res?.data.data);
+    } catch (error) {
+      console.error("Fetch failed:", error);
+    }
+  }, [dateRange]);
 
-  const config = {
-    data,
-    height: 400,
-    xField: "year",
-    yField: "value",
-    smooth: true, 
-  };
+  useEffect(() => {
+    setDateRange(getUtcDateRange(dateTo, dateTo));
+  }, []);
 
-  const data2 = [
-    { type: "Loại A", value: 27 },
-    { type: "Loại B", value: 25 },
-    { type: "Loại C", value: 18 },
-    { type: "Loại D", value: 15 },
-    { type: "Loại E", value: 10 },
-    { type: "Loại F", value: 5 },
-  ];
-
-  const config2 = {
-    appendPadding: 10,
-    data: data2, 
-    angleField: "value",
-    colorField: "type",
-    radius: 1,
-    innerRadius: 0.6,
-    label: {
-      type: "inner",
-      offset: "-30%",
-      content: "{value}",
-      style: {
-        textAlign: "center",
-        fontSize: 14,
+  useEffect(() => {
+    if (dateRange.start && dateRange.end) {
+      setTimeout(() => {
+        fetchData();
+      }, 1000);
+    }
+  }, [dateRange]);
+  const config2 = useMemo(
+    () => ({
+      appendPadding: 10,
+      data: dataPie,
+      angleField: "value",
+      colorField: "type",
+      radius: 1,
+      innerRadius: 0.6,
+      label: {
+        type: "inner",
+        offset: "-30%",
+        content: "{value}",
+        style: {
+          textAlign: "center",
+          fontSize: 14,
+        },
       },
-    },
-    interactions: [
-      {
-        type: "element-active",
-      },
-    ],
+      interactions: [
+        {
+          type: "element-active",
+        },
+      ],
+    }),
+    [dataPie]
+  );
+  const handleChange = (value: number) => {
+    const RangeDate =
+      value === 1
+        ? getUtcDateRange(dateTo, dateTo)
+        : getUtcDateRange(dateTo, dateFrom);
+    setDateRange(RangeDate);
+    fetchData();
   };
-
   return (
     <div style={{}}>
-      <Row gutter={16}>
-        <Col span={16}>
+      <Row gutter={24}>
+        <Col span={24}>
           <Card bordered={false}>
-            <Line {...config} />
-          </Card>
-        </Col>
-        <Col span={8}>
-          <Card bordered={false}>
+            <Select
+              defaultValue={1}
+              style={{ width: 120 }}
+              onChange={handleChange}
+              options={[
+                { value: 1, label: "Daily" },
+                { value: 2, label: "Month" },
+              ]}
+            />
             <Pie {...config2} />
           </Card>
         </Col>
