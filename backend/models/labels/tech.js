@@ -29,4 +29,5 @@ const labelsTech = new mongoose.Schema({
     type: String,
   },
 });
+
 module.exports = mongoose.model("tech", labelsTech, "tech");

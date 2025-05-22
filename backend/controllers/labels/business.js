@@ -2,9 +2,25 @@ const labelsBusiness = require("../../models/labels/bussiness");
 
 const labelsBusinessController = {
   getAllBusiness: async (req, res) => {
-    const date = new Date();
-    console.log(date);
-    const getLabelsBusiness = await labelsBusiness.find();
+    const { dateFrom, dateTo } = req.query;
+    const startDate = new Date(dateFrom);
+    const endDate = new Date(dateTo);
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid date format" });
+    }
+    const getLabelsBusiness = await labelsBusiness
+      .find()
+      .sort({
+        like: -1,
+        comment: -1,
+      })
+      .where({
+        viral: { $gte: startDate, $lte: endDate },
+      })
+      .limit(10);
     res.status(200).json({
       success: true,
       data: getLabelsBusiness,

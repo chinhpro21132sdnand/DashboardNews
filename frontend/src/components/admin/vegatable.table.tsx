@@ -1,51 +1,49 @@
 "use client";
 import { UserOutlined } from "@ant-design/icons";
-import { Button, Card, Input, Select, List } from "antd";
-import PaginationComponent from "../common/pagination/page";
+import { Card, Input, List } from "antd";
 import PopUpModal from "../common/popup/page";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { getAllvegetale, detailVegetable } from "@/reduce/vegatable/apiRequest";
-import IsActiveStart from "@/types/dataStart";
 import Meta from "antd/es/card/Meta";
 import { formatdate } from "@/library/format";
+import { DatePicker, Space } from "antd";
+import { getUtcDateRange2 } from "@/library/dateJs";
 // import toastMessage from "@/components/common/toastMessage/page";
-
+import { Dayjs } from "dayjs";
+type labels = {
+  _id: string;
+  author: string;
+  time: string;
+  content: string;
+  like: number;
+  comment: number;
+  labels: string;
+};
 const UserTable = () => {
-  const [dataSource, setDataSource] = useState([]);
-  const [PageSize, getPagesize] = useState(10);
+  const [dataSource, setDataSource] = useState<labels[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [total, getTotal] = useState(1);
-  const [currentPage, getCurrent] = useState(1);
-  const [name, setName] = useState("");
-  const [isActive, setIsActive] = useState("");
-  const [dataDetail, setDataDetail] = useState([]);
+  const [dataDetail, setDataDetail] = useState<labels | null>(null);
+  const [dataDate, setdataDate] = useState<{
+    start: Date | null;
+    end: Date | null;
+  }>({
+    start: null,
+    end: null,
+  });
+  const { RangePicker } = DatePicker;
+
   const dispatch = useDispatch();
-  // const handleClickFN = (keys: string, record) => {
-  //   if (keys === "delete") {
-  //     setNameVege(record.name);
-  //     setIsDeletedVege(true);
-  //   } else {
-  //     setIsUpdateVege(true);
-  //   }
-  // };
-  // const handelOpenChange = (id: string, visible: boolean) => {
-  //   setIdDropdow(id);
-  //   setOpenDropdownId(visible ? id : null);
-  // };
+
   const fetchData = async () => {
     try {
       const params = [
-        name.toString() && `name=${name}`,
-        isActive.toString() && `active=${isActive}`,
-        PageSize && `page=${PageSize}`,
-        currentPage && `current=${currentPage}`,
+        dataDate.start && `dateFrom=${dataDate.start.toISOString()}`,
+        dataDate.end && `dateTo=${dataDate.end.toISOString()}`,
       ].filter(Boolean);
       const url = params.length > 0 ? `?${params.join("&")}` : "";
       const res = await getAllvegetale(dispatch, url);
-      getPagesize(res?.data.pagination?.pageSize);
-      getTotal(res?.data.pagination?.totalItems);
       setDataSource(res?.data.data);
     } catch (error) {
       console.error("Fetch failed:", error);
@@ -53,15 +51,24 @@ const UserTable = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    setdataDate(getUtcDateRange2(new Date(), new Date()));
   }, []);
   useEffect(() => {
-    fetchData();
-  }, [currentPage, name, isActive]);
-  const handlePageChange = useCallback((page: number) => {
-    getCurrent(page);
-    getTotal(total);
-  }, []);
+    if (dataDate.start && dataDate.end) {
+      fetchData();
+    }
+  }, [dataDate]);
+  const handleDateChange = (
+    dates: [Dayjs | null, Dayjs | null] | null,
+    dateStrings: [string, string]
+  ) => {
+    if (!dates || !dates[0] || !dates[1]) {
+      setdataDate(getUtcDateRange2(new Date(), new Date()));
+    } else {
+      console.log(dateStrings);
+      setdataDate(getUtcDateRange2(dates[0].toDate(), dates[1].toDate()));
+    }
+  };
   const onClose = () => {
     setIsModalOpen(false);
     fetchData();
@@ -94,22 +101,23 @@ const UserTable = () => {
             marginBottom: 20,
           }}
         >
-          <h3>Quản lý bài viết về công nghệ</h3>
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <h3>Quản lý bài viết về giải trí</h3>
+          <div
+            style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}
+          >
             <Input
               size="large"
               style={{ width: "40%" }}
               placeholder="Nhập để tìm kiếm"
               prefix={<UserOutlined />}
-              onChange={(e) => setName(e.target.value)}
+              //onChange={(e) => setName(e.target.value)}
             />
-            <Select
-              size="large"
-              style={{ width: "40%", marginLeft: "20px" }}
-              onChange={(e) => setIsActive(e)}
-              options={IsActiveStart}
-              placeholder="Lọc theo..."
-            />
+            <Space direction="vertical" size={12}>
+              <RangePicker
+                style={{ padding: "10px" }}
+                onChange={handleDateChange}
+              />
+            </Space>
           </div>
         </div>
 
@@ -121,13 +129,7 @@ const UserTable = () => {
               <Card
                 hoverable
                 onClick={() => handelID(item?._id)}
-                style={{ width: 300, height: 300, overflow: "hidden" }}
-                cover={
-                  <img
-                    alt="example"
-                    src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"
-                  />
-                }
+                style={{ width: 300, height: 140, overflow: "hidden" }}
               >
                 <Meta
                   title={<h3 className="custom-title">{item?.author}</h3>}
@@ -146,14 +148,7 @@ const UserTable = () => {
           dataDetail={dataDetail}
           isModalOpen={isModalOpen}
           onClose={onClose}
-          title="Chi tiết bài viết về công nghệ"
-        />
-
-        <PaginationComponent
-          PageSize={PageSize}
-          currentPage={currentPage}
-          total={total}
-          onChange={handlePageChange}
+          title="Chi tiết bài viết giải trí"
         />
       </Card>
     </>

@@ -9,9 +9,9 @@ type labels = {
   like: number;
   comment: number;
   labels: string;
-};
+} | null;
 interface UserCardProps {
-  dataDetail: labels[];
+  dataDetail: labels;
   isModalOpen: boolean;
   onClose: () => void;
   title: string;
@@ -22,7 +22,6 @@ const PopUpModal: React.FC<UserCardProps> = ({
   onClose,
   title,
 }) => {
-  console.log(dataDetail, "dataDetail");
   return (
     <>
       <Modal
@@ -34,15 +33,7 @@ const PopUpModal: React.FC<UserCardProps> = ({
         onCancel={onClose}
         className="custom-modal"
       >
-        <Card
-          style={{ width: "100% " }}
-          cover={
-            <img
-              alt="example"
-              src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"
-            />
-          }
-        >
+        <Card style={{ width: "100% " }}>
           <Meta
             title={
               <h3 className="custom-title">Tác giả: {dataDetail?.author}</h3>

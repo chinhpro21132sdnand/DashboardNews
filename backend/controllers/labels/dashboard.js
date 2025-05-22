@@ -21,6 +21,80 @@ const DashboardController = {
         data: [
           {
             type: "business",
+            sales: business,
+          },
+          {
+            type: "entertaiment",
+            sales: entertainment,
+          },
+          {
+            type: "politics",
+            sales: politics,
+          },
+          {
+            type: "tech",
+            sales: tech,
+          },
+        ],
+      });
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu dashboard:", error);
+      res.status(500).json({
+        success: false,
+        message: "Đã có lỗi xảy ra khi lấy dữ liệu dashboard.",
+      });
+    }
+  },
+  getHotDashboardNew: async (req, res) => {
+    const { start, end } = req.body;
+    try {
+      const [business, entertainment, politics, tech] = await Promise.all([
+        labelsBusiness
+          .find()
+          .sort({
+            like: -1,
+            comment: -1,
+          })
+          .where({
+            viral: { $gte: start, $lte: end },
+          })
+          .limit(4),
+        labelsEntertaiment
+          .find()
+          .sort({
+            like: -1,
+            comment: -1,
+          })
+          .where({
+            viral: { $gte: start, $lte: end },
+          })
+          .limit(4),
+        labelsPolitics
+          .find()
+          .sort({
+            like: -1,
+            comment: -1,
+          })
+          .where({
+            viral: { $gte: start, $lte: end },
+          })
+          .limit(4),
+        labelsTech
+          .find()
+          .sort({
+            like: -1,
+            comment: -1,
+          })
+          .where({
+            viral: { $gte: start, $lte: end },
+          })
+          .limit(4),
+      ]);
+      res.status(200).json({
+        success: true,
+        data: [
+          {
+            type: "business",
             value: business,
           },
           {
@@ -38,11 +112,7 @@ const DashboardController = {
         ],
       });
     } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu dashboard:", error);
-      res.status(500).json({
-        success: false,
-        message: "Đã có lỗi xảy ra khi lấy dữ liệu dashboard.",
-      });
+      console.log(error);
     }
   },
 };

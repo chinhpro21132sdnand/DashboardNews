@@ -2,7 +2,25 @@ const labelsEntertaiment = require("../../models/labels/entertainment");
 
 const labelsEntertaimentController = {
   getAllEntertaiment: async (req, res) => {
-    const getLabelsEntertaiment = await labelsEntertaiment.find();
+    const { dateFrom, dateTo } = req.query;
+    const startDate = new Date(dateFrom);
+    const endDate = new Date(dateTo);
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid date format" });
+    }
+    const getLabelsEntertaiment = await labelsEntertaiment
+      .find()
+      .sort({
+        like: -1,
+        comment: -1,
+      })
+      .where({
+        viral: { $gte: startDate, $lte: endDate },
+      })
+      .limit(10);
     res.status(200).json({
       success: true,
       data: getLabelsEntertaiment,

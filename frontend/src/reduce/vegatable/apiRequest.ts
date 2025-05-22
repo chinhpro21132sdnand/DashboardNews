@@ -8,14 +8,7 @@ import {
   detailVegetableSuccess,
   detailVegetableFailure,
 } from "./vegatableslice";
-// interface Vegetable {
-//   name: string;
-//   price: number;
-//   content: string;
-//   number: number;
-//   unit: string;
-//   supplier: string;
-// }
+
 export const getAllvegetale = async (dispatch: AppDispatch, params: string) => {
   dispatch(getAllVegetableStart());
   try {

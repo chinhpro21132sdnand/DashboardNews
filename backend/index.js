@@ -15,6 +15,29 @@ dotenv.config();
 const app = express();
 
 // Hàm migrate
+async function migrateViralField() {
+  try {
+    const result = await mongoose.connection.db
+      .collection("business")
+      .updateMany({ viral: { $type: "string" } }, [
+        {
+          $set: {
+            viral: {
+              $dateFromString: {
+                dateString: "$viral",
+                format: "%Y-%m-%d",
+                onError: null, // Xử lý lỗi
+                onNull: null, // Xử lý giá trị null
+              },
+            },
+          },
+        },
+      ]);
+    console.log(`✅ Đã chuyển đổi ${result.modifiedCount} documents`);
+  } catch (error) {
+    console.error("❌ Lỗi khi chuyển đổi:", error.message);
+  }
+}
 
 // Kết nối DB và chạy migrate
 const connectAndMigrate = async () => {
@@ -23,6 +46,7 @@ const connectAndMigrate = async () => {
     console.log("📚 Đã kết nối MongoDB");
 
     // Chạy migration sau khi kết nối
+    await migrateViralField();
   } catch (error) {
     console.error("❌ Lỗi kết nối MongoDB:", error.message);
     process.exit(1); // Thoát nếu không kết nối được

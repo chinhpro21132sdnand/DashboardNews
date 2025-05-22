@@ -1,17 +1,23 @@
 "use client";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 //import { Line } from "@ant-design/charts";
-import { Card, Col, Row } from "antd";
-import { Pie } from "@ant-design/plots";
-import { getAllDashboard } from "@/reduce/dashboard/apiRequest";
+import { Card, Col, List, Row } from "antd";
+import { Column } from "@ant-design/plots";
+import {
+  getAllDashboard,
+  getHotDashboard,
+} from "@/reduce/dashboard/apiRequest";
 import { useDispatch } from "react-redux";
 import { Select } from "antd";
 import { getUtcDateRange } from "../../library/dateJs";
+import { Tabs } from "antd";
 const AdminCard: React.FC = () => {
   const dispatch = useDispatch();
   const dateTo = new Date(2025, 4, 14);
   const dateFrom = new Date(dateTo.getFullYear(), dateTo.getMonth(), 2);
   const [dataPie, setDataPie] = useState([]);
+  const [dataHot, setDataHot] = useState([]);
+
   const [dateRange, setDateRange] = useState<{
     start: Date | null;
     end: Date | null;
@@ -20,10 +26,47 @@ const AdminCard: React.FC = () => {
     end: null,
   });
   const fetchData = useCallback(async () => {
-    console.log(dateRange, "dateRange");
     try {
       const res = await getAllDashboard(dispatch, dateRange);
+      const res2 = await getHotDashboard(dispatch, dateRange);
+      const data = res2?.data.data.map((item, index) => {
+        return {
+          key: index,
+          label: `bài viết nôỉ bật ${item.type}`,
+          children: (
+            <List
+              grid={{ gutter: 16, column: 2 }}
+              dataSource={item.value}
+              renderItem={(post) => (
+                <List.Item>
+                  <Card
+                    hoverable
+                    style={{ width: 300, height: 140, overflow: "hidden" }}
+                  >
+                    <Card.Meta
+                      title={
+                        <h3 className="custom-title">author: {post?.author}</h3>
+                      }
+                      description={
+                        <>
+                          <p className="custom-content">
+                            content: {post?.content}
+                          </p>
+                          <p>like: {post?.like}</p>
+                          <p>comment: {post?.comment}</p>
+                        </>
+                      }
+                    />
+                  </Card>
+                </List.Item>
+              )}
+            />
+          ),
+        };
+      });
+      console.log(data, "dataa");
       setDataPie(res?.data.data);
+      setDataHot(data);
     } catch (error) {
       console.error("Fetch failed:", error);
     }
@@ -44,24 +87,15 @@ const AdminCard: React.FC = () => {
     () => ({
       appendPadding: 10,
       data: dataPie,
-      angleField: "value",
+      xField: "type",
+      yField: "sales",
       colorField: "type",
-      radius: 1,
-      innerRadius: 0.6,
-      label: {
-        type: "inner",
-        offset: "-30%",
-        content: "{value}",
-        style: {
-          textAlign: "center",
-          fontSize: 14,
+      width: 700,
+      scale: {
+        color: {
+          range: ["#f4664a", "#faad14", "#a0d911", "#52c41a"],
         },
       },
-      interactions: [
-        {
-          type: "element-active",
-        },
-      ],
     }),
     [dataPie]
   );
@@ -76,7 +110,7 @@ const AdminCard: React.FC = () => {
   return (
     <div style={{}}>
       <Row gutter={24}>
-        <Col span={24}>
+        <Col span={12}>
           <Card bordered={false}>
             <Select
               defaultValue={1}
@@ -87,7 +121,12 @@ const AdminCard: React.FC = () => {
                 { value: 2, label: "Month" },
               ]}
             />
-            <Pie {...config2} />
+            <Column {...config2} />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card bordered={false}>
+            <Tabs defaultActiveKey="0" items={dataHot} />
           </Card>
         </Col>
       </Row>
