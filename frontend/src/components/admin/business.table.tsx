@@ -10,6 +10,7 @@ import Meta from "antd/es/card/Meta";
 import { formatdate } from "@/library/format";
 import { DatePicker, Space } from "antd";
 import { getUtcDateRange2 } from "@/library/dateJs";
+import { Select } from "antd";
 import { Dayjs } from "dayjs";
 
 type labels = {
@@ -25,6 +26,7 @@ const UserTable = () => {
   const [dataSource, setDataSource] = useState<labels[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [dataDetail, setDataDetail] = useState<labels | null>(null);
+  const [lang, setLang] = useState("vi");
   const [dataDate, setdataDate] = useState<{
     start: Date | null;
     end: Date | null;
@@ -39,6 +41,7 @@ const UserTable = () => {
       const params = [
         dataDate.start && `dateFrom=${dataDate.start.toISOString()}`,
         dataDate.end && `dateTo=${dataDate.end.toISOString()}`,
+        lang && `lang=${lang}`,
       ].filter(Boolean);
       const url = params.length > 0 ? `?${params.join("&")}` : "";
       const res = await getAllBusiness(dispatch, url);
@@ -55,7 +58,7 @@ const UserTable = () => {
     if (dataDate.start && dataDate.end) {
       fetchData();
     }
-  }, [dataDate]);
+  }, [dataDate, lang]);
   const onClose = () => {
     setIsModalOpen(false);
     fetchData();
@@ -79,6 +82,10 @@ const UserTable = () => {
       console.log(dateStrings);
       setdataDate(getUtcDateRange2(dates[0].toDate(), dates[1].toDate()));
     }
+  };
+  const handleChange = (value: string) => {
+    console.log(`selected ${value}`);
+    setLang(value);
   };
   return (
     <>
@@ -109,6 +116,17 @@ const UserTable = () => {
               prefix={<UserOutlined />}
               // onChange={(e) => setName(e.target.value)}
             />
+            <Space wrap>
+              <Select
+                defaultValue="vi"
+                style={{ width: 180, height: "42px" }}
+                onChange={handleChange}
+                options={[
+                  { value: "vi", label: "Bài viết trong nước" },
+                  { value: "en", label: "Bài viết ngoài nước" },
+                ]}
+              />
+            </Space>
             <Space direction="vertical" size={12}>
               <RangePicker
                 style={{ padding: "10px" }}

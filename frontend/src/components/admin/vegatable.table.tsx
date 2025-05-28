@@ -12,6 +12,8 @@ import { DatePicker, Space } from "antd";
 import { getUtcDateRange2 } from "@/library/dateJs";
 // import toastMessage from "@/components/common/toastMessage/page";
 import { Dayjs } from "dayjs";
+import { Select } from "antd";
+
 type labels = {
   _id: string;
   author: string;
@@ -33,6 +35,7 @@ const UserTable = () => {
     end: null,
   });
   const { RangePicker } = DatePicker;
+  const [lang, setLang] = useState("vi");
 
   const dispatch = useDispatch();
 
@@ -57,7 +60,7 @@ const UserTable = () => {
     if (dataDate.start && dataDate.end) {
       fetchData();
     }
-  }, [dataDate]);
+  }, [dataDate, lang]);
   const handleDateChange = (
     dates: [Dayjs | null, Dayjs | null] | null,
     dateStrings: [string, string]
@@ -82,7 +85,10 @@ const UserTable = () => {
       console.log(err);
     }
   };
-
+  const handleChange = (value: string) => {
+    console.log(`selected ${value}`);
+    setLang(value);
+  };
   return (
     <>
       <div
@@ -112,6 +118,17 @@ const UserTable = () => {
               prefix={<UserOutlined />}
               //onChange={(e) => setName(e.target.value)}
             />
+            <Space wrap>
+              <Select
+                defaultValue="vi"
+                style={{ width: 180, height: "42px" }}
+                onChange={handleChange}
+                options={[
+                  { value: "vi", label: "Bài viết trong nước" },
+                  { value: "en", label: "Bài viết ngoài nước" },
+                ]}
+              />
+            </Space>
             <Space direction="vertical" size={12}>
               <RangePicker
                 style={{ padding: "10px" }}

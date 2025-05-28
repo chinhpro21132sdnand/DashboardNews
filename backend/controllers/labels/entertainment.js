@@ -2,7 +2,7 @@ const labelsEntertaiment = require("../../models/labels/entertainment");
 
 const labelsEntertaimentController = {
   getAllEntertaiment: async (req, res) => {
-    const { dateFrom, dateTo } = req.query;
+    const { dateFrom, dateTo, lang } = req.query;
     const startDate = new Date(dateFrom);
     const endDate = new Date(dateTo);
 
@@ -19,6 +19,7 @@ const labelsEntertaimentController = {
       })
       .where({
         viral: { $gte: startDate, $lte: endDate },
+        index: lang,
       })
       .limit(10);
     res.status(200).json({
