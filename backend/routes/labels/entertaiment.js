@@ -7,8 +7,4 @@ router.get(
   labelsEntertaimentController.getAllEntertaiment
 );
 
-router.get(
-  "/labels/entertaiment/:id",
-  labelsEntertaimentController.getDetailEntertaiment
-);
 module.exports = router;

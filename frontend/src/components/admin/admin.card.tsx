@@ -64,7 +64,6 @@ const AdminCard: React.FC = () => {
           ),
         };
       });
-      console.log(data, "dataa");
       setDataPie(res?.data.data);
       setDataHot(data);
     } catch (error) {

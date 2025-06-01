@@ -1,20 +1,19 @@
 "use client";
-import { UserOutlined } from "@ant-design/icons";
-import { Card, Input, List } from "antd";
-import PopUpModal from "../common/popup/page";
-
-import { useEffect, useState } from "react";
+import { Card, Col, List, Row, Tabs } from "antd";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
-import { DatePicker, Space } from "antd";
+import { getAllEntertaiment } from "@/reduce/entertaiment/apiRequest";
+import { DatePicker } from "antd";
 import { getUtcDateRange2 } from "@/library/dateJs";
-import {
-  detailEntertaiment,
-  getAllEntertaiment,
-} from "@/reduce/entertaiment/apiRequest";
-import Meta from "antd/es/card/Meta";
-import { formatdate } from "@/library/format";
 import { Dayjs } from "dayjs";
 import { Select } from "antd";
+import { Column } from "@ant-design/plots";
+import { TabsProps } from "antd";
+// Định nghĩa types
+type chart = {
+  type: string;
+  sales: number;
+};
 
 type labels = {
   _id: string;
@@ -24,11 +23,18 @@ type labels = {
   like: number;
   comment: number;
   labels: string;
+  labels_1: string;
 };
+
+type RawItem = {
+  _id: string;
+  count: number;
+  articles: labels[];
+};
+
 const UserTable = () => {
-  const [dataSource, setDataSource] = useState<labels[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [dataDetail, setDataDetail] = useState<labels | null>(null);
+  const [dataSource, setDataSource] = useState<TabsProps["items"]>([]);
+  const [dataChart, setDataChart] = useState<chart[]>([]);
   const [dataDate, setdataDate] = useState<{
     start: Date | null;
     end: Date | null;
@@ -36,21 +42,84 @@ const UserTable = () => {
     start: null,
     end: null,
   });
-  const [lang, setLang] = useState("vi");
-
   const { RangePicker } = DatePicker;
+  const [lang, setLang] = useState("en");
 
   const dispatch = useDispatch();
+
+  const config2 = useMemo(
+    () => ({
+      appendPadding: 10,
+      data: dataChart,
+      xField: "type",
+      yField: "sales",
+      colorField: "type",
+      width: 700,
+      scale: {
+        color: {
+          range: ["#f4664a", "#faad14", "#a0d911", "#52c41a"],
+        },
+      },
+    }),
+    [dataSource]
+  );
 
   const fetchData = async () => {
     try {
       const params = [
         dataDate.start && `dateFrom=${dataDate.start.toISOString()}`,
         dataDate.end && `dateTo=${dataDate.end.toISOString()}`,
+        lang && `lang=${lang}`,
       ].filter(Boolean);
       const url = params.length > 0 ? `?${params.join("&")}` : "";
       const res = await getAllEntertaiment(dispatch, url);
-      setDataSource(res?.data.data);
+      const rawData: RawItem[] = res?.data.data || [];
+
+      // Sửa lỗi type cho chartData
+      const chartData: chart[] = rawData.map((item) => ({
+        type: item._id,
+        sales: item.count,
+      }));
+
+      // Sửa lỗi type cho articles (tabs)
+      const articles: TabsProps["items"] = rawData.map(
+        (item, index: number) => ({
+          key: index.toString(),
+          label: `bài viết nổi bật ${item._id}`,
+          children: (
+            <List
+              grid={{ gutter: 16, column: 2 }}
+              dataSource={item.articles}
+              renderItem={(post) => (
+                <List.Item>
+                  <Card
+                    hoverable
+                    style={{ width: 300, height: 140, overflow: "hidden" }}
+                  >
+                    <Card.Meta
+                      title={
+                        <h3 className="custom-title">author: {post?.author}</h3>
+                      }
+                      description={
+                        <>
+                          <p className="custom-content">
+                            content: {post?.content}
+                          </p>
+                          <p>like: {post?.like}</p>
+                          <p>comment: {post?.comment}</p>
+                        </>
+                      }
+                    />
+                  </Card>
+                </List.Item>
+              )}
+            />
+          ),
+        })
+      );
+
+      setDataChart(chartData);
+      setDataSource(articles);
     } catch (error) {
       console.error("Fetch failed:", error);
     }
@@ -59,119 +128,53 @@ const UserTable = () => {
   useEffect(() => {
     setdataDate(getUtcDateRange2(new Date(), new Date()));
   }, []);
+
   useEffect(() => {
     if (dataDate.start && dataDate.end) {
       fetchData();
     }
   }, [dataDate, lang]);
-  const handleDateChange = (
-    dates: [Dayjs | null, Dayjs | null] | null,
-    dateStrings: [string, string]
-  ) => {
+
+  const handleDateChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
     if (!dates || !dates[0] || !dates[1]) {
       setdataDate(getUtcDateRange2(new Date(), new Date()));
     } else {
-      console.log(dateStrings);
       setdataDate(getUtcDateRange2(dates[0].toDate(), dates[1].toDate()));
     }
   };
-  const onClose = () => {
-    setIsModalOpen(false);
-    fetchData();
-  };
-  const handelID = async (item: string): Promise<void> => {
-    try {
-      const resDetail = await detailEntertaiment(dispatch, item);
-      setDataDetail(resDetail?.data.data);
-      setIsModalOpen(true);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+
   const handleChange = (value: string) => {
-    console.log(`selected ${value}`);
     setLang(value);
   };
-  return (
-    <>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginBottom: "20px",
-        }}
-      ></div>
-      <Card>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 20,
-          }}
-        >
-          <h3>Quản lý bài viết về giải trí</h3>
-          <div
-            style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}
-          >
-            <Input
-              size="large"
-              style={{ width: "40%" }}
-              placeholder="Nhập để tìm kiếm"
-              prefix={<UserOutlined />}
-              //onChange={(e) => setName(e.target.value)}
-            />
-            <Space wrap>
-              <Select
-                defaultValue="vi"
-                style={{ width: 180, height: "42px" }}
-                onChange={handleChange}
-                options={[
-                  { value: "vi", label: "Bài viết trong nước" },
-                  { value: "en", label: "Bài viết ngoài nước" },
-                ]}
-              />
-            </Space>
-            <Space direction="vertical" size={12}>
-              <RangePicker
-                style={{ padding: "10px" }}
-                onChange={handleDateChange}
-              />
-            </Space>
-          </div>
-        </div>
 
-        <List
-          grid={{ gutter: 16, column: 4 }}
-          dataSource={dataSource}
-          renderItem={(item) => (
-            <List.Item>
-              <Card
-                hoverable
-                onClick={() => handelID(item?._id)}
-                style={{ width: 300, height: 140, overflow: "hidden" }}
-              >
-                <Meta
-                  title={<h3 className="custom-title">{item?.author}</h3>}
-                  description={
-                    <>
-                      <p className="custom-content">{item?.content}</p>
-                      <p className="custom-time">{formatdate(item.time)}</p>
-                    </>
-                  }
-                />
-              </Card>
-            </List.Item>
-          )}
-        />
-        <PopUpModal
-          dataDetail={dataDetail}
-          isModalOpen={isModalOpen}
-          onClose={onClose}
-          title="Chi tiết bài viết giải trí"
-        />
-      </Card>
-    </>
+  return (
+    <div>
+      <Row gutter={24}>
+        <Col span={12}>
+          <Card bordered={false}>
+            <Select
+              defaultValue="en"
+              style={{ width: 180, height: "42px" }}
+              onChange={handleChange}
+              options={[
+                { value: "vi", label: "Bài viết trong nước" },
+                { value: "en", label: "Bài viết ngoài nước" },
+              ]}
+            />
+            <RangePicker
+              style={{ padding: "10px" }}
+              onChange={handleDateChange}
+            />
+            <Column {...config2} />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card bordered={false}>
+            <Tabs defaultActiveKey="0" items={dataSource} />
+          </Card>
+        </Col>
+      </Row>
+    </div>
   );
 };
 

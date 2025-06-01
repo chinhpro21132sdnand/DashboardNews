@@ -18,7 +18,7 @@ const app = express();
 async function migrateViralField() {
   try {
     const result = await mongoose.connection.db
-      .collection("business")
+      .collection("entertainment")
       .updateMany({ viral: { $type: "string" } }, [
         {
           $set: {
